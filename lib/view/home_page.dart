@@ -111,7 +111,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               return IconButton(
                 tooltip: 'Not Authorized',
                 icon: Icon(Icons.portable_wifi_off),
-                color: Colors.red,
+                color: Color.fromARGB(255, 146, 182, 17),
                 onPressed: () async {
                   await flutterBeacon.requestAuthorization;
                 },
