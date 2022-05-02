@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:beacon/controller/requirement_state_controller.dart';
-import 'package:beacon/view/home_page.dart';
+import 'package:beacon/controller/controller_bluetooth.dart';
+import 'package:beacon/view/view_inicial.dart';
 import 'package:get/get.dart';
 
 void main() {
