@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter_beacon/flutter_beacon.dart';
-import 'package:beacon/controller/requirement_state_controller.dart';
+import 'package:beacon/controller/controller_bluetooth.dart';
 import 'package:get/get.dart';
 
 class TabScanning extends StatefulWidget { //StatuefulWidget fornece informações mutáveis e cria um state object
@@ -20,24 +20,24 @@ class _TabScanningState extends State<TabScanning> {
   void initState() { //Função para iniciar o estado
     super.initState(); //Método que é chamado uma vez que a stateful widget é inserida na árvore de widget, função de inicialização
 
-    controller.startStream.listen((flag) { //Chama o método que inicia o stream, da classe RequirementStateController e escuta a flag de resposta
+    controller.iniciaStream.listen((flag) { //Chama o método que inicia o stream, da classe RequirementStateController e escuta a flag de resposta
       if (flag == true) { //Testa o valor da flag
-        initScanBeacon(); //Chama a função para iniciar o scan do beacon
+        iniciaScanBeacon(); //Chama a função para iniciar o scan do beacon
       }
     });
 
-    controller.pauseStream.listen((flag) { //Chama o método que pausa o stream, da classe RequirementStateController e escuta a flag de resposta
+    controller.pausaStream.listen((flag) { //Chama o método que pausa o stream, da classe RequirementStateController e escuta a flag de resposta
       if (flag == true) { //Testa o valor da flag
-        pauseScanBeacon(); //Chama a função para pausar o scan do beacon
+        pausaScanBeacon(); //Chama a função para pausar o scan do beacon
       }
     });
   }
 
-  initScanBeacon() async { //Função assíncrona que inicia o scan do beacon
+  iniciaScanBeacon() async { //Função assíncrona que inicia o scan do beacon
     await flutterBeacon.initializeScanning; //Instância única ao método de scan da API flutter beacon
     if (!controller.bluetoothEnabled) { //Teste do estado do bluetooth (desabilitado)
       print(
-          'bluetoothEnabled=${controller.bluetoothEnabled}'); //Imprime o valor da variável
+          'bluetoothAtivado=${controller.bluetoothEnabled}'); //Imprime o valor da variável
       return;
     }
 
@@ -75,7 +75,7 @@ class _TabScanningState extends State<TabScanning> {
     });
   }
 
-  pauseScanBeacon() async { //Função assíncrona que pausa o scanning do beacon
+  pausaScanBeacon() async { //Função assíncrona que pausa o scanning do beacon
     _streamRanging?.pause(); //Pausa o stream
     if (_beacons.isNotEmpty) { //Testa se a lista de beacons não está vazia
       setState(() { //Notifica o framework que o estado do objeto mudou
@@ -107,44 +107,6 @@ class _TabScanningState extends State<TabScanning> {
   @override
   Widget build(BuildContext context) { //Constroi a widget
     return Scaffold( //Retorna o "esqueleto" da widget
-      body: _beacons.isEmpty //Testa se a lista de beacons está vazia
-          ? Center(child: CircularProgressIndicator()) //Se estiver, mostra na tela um ícone animado de carregamento
-          : ListView( //Se não estiver, retorna o componente que será mostrado
-              children: ListTile.divideTiles( //Divide o componente em grids
-                context: context,
-                tiles: _beacons.map(
-                  (beacon) {
-                    return ListTile( //Retorna um 'tile' para cada iteração
-                      title: Text( //Define o título como o UUID dregião de cada beacon 
-                        beacon.proximityUUID,
-                        style: TextStyle(fontSize: 15.0), //Estilização
-                      ),
-                      subtitle: new Row( //Define o subtítulo de cada linha
-                        mainAxisSize: MainAxisSize.max, //Cria um array horizontal de tamanho máximo
-                        children: <Widget>[ //Define os filhos como widgets
-                          Flexible( //Cria um widget que controla como um filho se flexiona
-                            child: Text( //Define o texto do filho
-                              'Major: ${beacon.major}\nMinor: ${beacon.minor}', //Imprime o maior e o menor
-                              style: TextStyle(fontSize: 13.0), //Estilização
-                            ),
-                            flex: 1, //Define a posição do flex
-                            fit: FlexFit.tight, //Define o posicionamento do flex no espaço
-                          ),
-                          Flexible( //Cria um widget que controla como um filho se flexiona
-                            child: Text( //Define o texto do filho
-                              'Accuracy: ${beacon.accuracy}m\nRSSI: ${beacon.rssi}', //Imprime a precisão do beacon
-                              style: TextStyle(fontSize: 13.0), //Estilização
-                            ),
-                            flex: 2, //Define a posição do flex
-                            fit: FlexFit.tight, //Define o posicionamento do flex no espaço
-                          )
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ).toList(), //Lista os widgets
-            ),
     );
   }
 }

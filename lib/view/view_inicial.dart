@@ -1,11 +1,12 @@
+
+// -------------------------------------importacoes-------------------------------------
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_beacon/flutter_beacon.dart';
-import 'package:beacon/controller/requirement_state_controller.dart';
-import 'package:beacon/view/app_scanning.dart';
+import 'package:beacon/controller/controller_bluetooth.dart';
+import 'package:beacon/view/view_scan.dart';
 import 'package:get/get.dart';
 
 // Cria a tela
@@ -27,38 +28,39 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
     super.initState();
-    listeningState();
+    esperaEstadoBluetooth();
   }
 
-  listeningState() async {
-    print('Listening to bluetooth state');
+  esperaEstadoBluetooth() async {
+    print('Verificando o estado do Bluetooth');
     // verifica o estado do bluetooth
     _streamBluetooth = flutterBeacon.bluetoothStateChanged().listen((BluetoothState state) async {
       // atualiza o estado do bluetooth no controle
-      controller.updateBluetoothState(state);
+      controller.atualizaEstadoBluetooth(state);
       // chama o metodo para verificar os parametros da aplicacao
-      await checkAllRequirements();
+      await verificaParametroApp();
     });
   }
   // Metodo para chegar os requisitos da aplicacao
-  checkAllRequirements() async {
+  verificaParametroApp() async {
     // recebe o estado do bluetooth(ligado ou desligado)
     final bluetoothState = await flutterBeacon.bluetoothState;
     // atualiza o estado do bluetooth
-    controller.updateBluetoothState(bluetoothState);
+    controller.atualizaEstadoBluetooth(bluetoothState);
+
     // imprime o estado do bluetooth(ligado ou desligado)
     print('BLUETOOTH $bluetoothState');
     // Caso o bluetooth esteja ligada a aplicacao pode ser iniciada
     if (controller.bluetoothEnabled ) { 
-      print('STATE READY');
+      print('Aplicação pronta');
       if (currentIndex == 0) {
-        print('SCANNING');
+        print('Escaneando');
         // Chamada do metodo para comecar a escanear 
-        controller.startScanning();
+        controller.iniciaEscaneamento();
       } 
     } else {
-      print('STATE NOT READY');
-      controller.pauseScanning();// Caso o bluetooth seja desligado ele para de escanear
+      print('Aplicação não está pronta');
+      controller.pausaEscaneamento();// Caso o bluetooth seja desligado ele para de escanear
     }
   }
 
@@ -71,7 +73,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           _streamBluetooth?.resume();
         }
       }
-      await checkAllRequirements();
+      await verificaParametroApp();
     } else if (state == AppLifecycleState.paused) { // quando a aplicacao esta no background mas nao esta sendo usada
       _streamBluetooth?.pause(); // pausa o stream
     }
@@ -88,7 +90,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) { // constroi o widget
     return Scaffold( // uma estrutura padrão de tela do flutter
       appBar: AppBar( // barra azul de cima da tela
-        title: const Text('Flutter Beacon'), // 
+        title: const Text('Projeto'), // 
         centerTitle: false,
         actions: <Widget>[
           Obx(() { // vai fazer update do widget do bluetooth
@@ -96,7 +98,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
             if (state == BluetoothState.stateOn) {
               return IconButton(
-                tooltip: 'Bluetooth ON', // para acessibilidade(aparece escrito apos passar o mouse)
+                tooltip: 'Bluetooth ligado', // para acessibilidade(aparece escrito apos passar o mouse)
                 icon: Icon(Icons.bluetooth_connected),
                 onPressed: () {},
                 color: Colors.lightBlueAccent, // cor do icone do bluetooth ligado
@@ -105,7 +107,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
             if (state == BluetoothState.stateOff) { // caso bluetooth esteja desligado
               return IconButton(
-                tooltip: 'Bluetooth OFF', //para acessibilidade
+                tooltip: 'Bluetooth desligado', //para acessibilidade
                 icon: Icon(Icons.bluetooth),
                 onPressed: handleOpenBluetooth, // chama o metodo que pede para ligar o bluetooth
                 color: Colors.red,
@@ -114,7 +116,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
             return IconButton(
               icon: Icon(Icons.bluetooth_disabled), // quando nao reconhecer o bluetooth no dispositivo
-              tooltip: 'Bluetooth State Unknown', // acessiblidade
+              tooltip: 'Bluetooth não disponível', // acessiblidade
               onPressed: () {},
               color: Colors.grey, 
             );
@@ -135,9 +137,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           });
 
           if (currentIndex == 0) { // inicia o scan ao clicar no botao
-            controller.startScanning();
+            controller.iniciaEscaneamento();
           }else {
-            controller.pauseScanning();
+            controller.pausaEscaneamento();
           }
         },
         items: [
