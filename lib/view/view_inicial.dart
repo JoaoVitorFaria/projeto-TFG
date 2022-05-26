@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   esperaEstadoBluetooth() async {
-    print('Verificando o estado do Bluetooth');
+    // print('Verificando o estado do Bluetooth');
     // verifica o estado do bluetooth
     _streamBluetooth = flutterBeacon.bluetoothStateChanged().listen((BluetoothState state) async {
       // atualiza o estado do bluetooth no controle
@@ -49,24 +49,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     controller.atualizaEstadoBluetooth(bluetoothState);
 
     // imprime o estado do bluetooth(ligado ou desligado)
-    print('BLUETOOTH $bluetoothState');
+    // print('BLUETOOTH $bluetoothState');
     // Caso o bluetooth esteja ligada a aplicacao pode ser iniciada
     if (controller.bluetoothEnabled ) { 
-      print('Aplicação pronta');
+      // print('Aplicação pronta');
       if (currentIndex == 0) {
-        print('Escaneando');
+        // print('Escaneando');
         // Chamada do metodo para comecar a escanear 
         controller.iniciaEscaneamento();
       } 
     } else {
-      print('Aplicação não está pronta');
+      // print('Aplicação não está pronta');
       controller.pausaEscaneamento();// Caso o bluetooth seja desligado ele para de escanear
     }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    print('AppLifecycleState = $state');
+    // print('AppLifecycleState = $state');
     if (state == AppLifecycleState.resumed) { // quando a aplicacao esta aberta
       if (_streamBluetooth != null) {
         if (_streamBluetooth!.isPaused) {
@@ -162,7 +162,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       try {
         await flutterBeacon.openBluetoothSettings;
       } on PlatformException catch (e) {
-        print(e);
+        // print(e);
       }
     } 
   }

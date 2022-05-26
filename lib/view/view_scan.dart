@@ -36,8 +36,8 @@ class _TabScanningState extends State<TabScanning> {
   iniciaScanBeacon() async { //Função assíncrona que inicia o scan do beacon
     await flutterBeacon.initializeScanning; //Instância única ao método de scan da API flutter beacon
     if (!controller.bluetoothEnabled) { //Teste do estado do bluetooth (desabilitado)
-      print(
-          'bluetoothAtivado=${controller.bluetoothEnabled}'); //Imprime o valor da variável
+      // print(
+      //     'bluetoothAtivado=${controller.bluetoothEnabled}'); //Imprime o valor da variável
       return;
     }
 
@@ -61,7 +61,8 @@ class _TabScanningState extends State<TabScanning> {
 
     _streamRanging =
       flutterBeacon.ranging(regions).listen((RangingResult result) { //Começa a variar as regiões da lista adicionado uma inscrição que escuta o resultado da classe para gerenciar o resultado da varredura  
-      print(result); //Imprime o resultado
+      // print(result);
+      // print("testandooooooooooooo"); //Imprime o resultado
       if (mounted) { //Testa se o state object está na árvore de widget
         setState(() { //Notifica o framework que o estado do objeto mudou
           _regionBeacons[result.region] = result.beacons; //Atribui as regiões do resultado
