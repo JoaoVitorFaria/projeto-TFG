@@ -3,6 +3,8 @@ import 'package:beacon/controller/controller_bluetooth.dart';
 import 'package:beacon/view/view_inicial.dart';
 import 'package:get/get.dart';
 
+import 'controller/controller_distancia.dart';
+
 void main() {
   runApp(MainApp());
 }
@@ -11,7 +13,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Get.put(RequirementStateController());
-
+    Get.put(RequirementDistance());
     final themeData = Theme.of(context);
     const primary = Colors.blue;
 

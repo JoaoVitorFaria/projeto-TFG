@@ -8,7 +8,7 @@ import 'package:flutter_beacon/flutter_beacon.dart';
 import 'package:beacon/controller/controller_bluetooth.dart';
 import 'package:beacon/view/view_scan.dart';
 import 'package:get/get.dart';
-
+import 'dart:developer';
 // Cria a tela
 class HomePage extends StatefulWidget {
   //override é usado para reescrever um 'metodo abstrato' da classe statefulWidget
@@ -22,6 +22,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   // funcao assincrona para receber informacoes sobre o bluetooth
   StreamSubscription<BluetoothState>? _streamBluetooth;
   int currentIndex = 0;
+  String retorno = ' ';
 
   // metodo para iniciar a aplicacao
   @override
@@ -40,16 +41,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       // chama o metodo para verificar os parametros da aplicacao
       await verificaParametroApp();
     });
+    // print('Teste de retorno----------------------------- $retorno ---------------------------------------');
+    // print('Teste de stream(01)----------------------------- $_streamBluetooth ---------------------------------------');
+
   }
-  // Metodo para chegar os requisitos da aplicacao
+  // Metodo para checar os requisitos da aplicacao
   verificaParametroApp() async {
     // recebe o estado do bluetooth(ligado ou desligado)
     final bluetoothState = await flutterBeacon.bluetoothState;
     // atualiza o estado do bluetooth
     controller.atualizaEstadoBluetooth(bluetoothState);
-
+    _streamBluetooth.printInfo();
     // imprime o estado do bluetooth(ligado ou desligado)
     // print('BLUETOOTH $bluetoothState');
+    // print('Teste de retorno----------------------------- $retorno ---------------------------------------');
+    // print('Teste de stream(02)-----------------------------$_streamBluetooth---------------------------------------');
+    // print('Teste de stream(02)tostring-----------------------------' + _streamBluetooth.toString()+' ---------------------------------------');
+
+    
     // Caso o bluetooth esteja ligada a aplicacao pode ser iniciada
     if (controller.bluetoothEnabled ) { 
       // print('Aplicação pronta');
@@ -71,6 +80,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       if (_streamBluetooth != null) {
         if (_streamBluetooth!.isPaused) {
           _streamBluetooth?.resume();
+          retorno = _streamBluetooth.toString();
+          // ignore: avoid_print
+          // print('Teste de retorno----------------------------- $retorno ---------------------------------------');
+          // print('Teste de stream(03)-----------------------------' + _streamBluetooth.toString()+' ---------------------------------------');
         }
       }
       await verificaParametroApp();
@@ -162,7 +175,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       try {
         await flutterBeacon.openBluetoothSettings;
       } on PlatformException catch (e) {
-        // print(e);
+        print(e);
       }
     } 
   }
