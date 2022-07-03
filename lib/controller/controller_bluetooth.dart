@@ -11,17 +11,20 @@ class RequirementStateController extends GetxController {
   atualizaEstadoBluetooth(BluetoothState state) {
     bluetoothState.value = state;
   }
-  // Atualiza o estado do scanner 
+
+  // Atualiza o estado do scanner
   iniciaEscaneamento() {
     _startScanning.value = true;
     _pauseScanning.value = false;
   }
-  // Atualiza o estado do scanner 
+
+  // Atualiza o estado do scanner
   pausaEscaneamento() {
     _startScanning.value = false;
     _pauseScanning.value = true;
   }
-  // uma variavel assincrona 
+
+  // uma variavel assincrona
   Stream<bool> get iniciaStream {
     return _startScanning.stream;
   }

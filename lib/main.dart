@@ -1,3 +1,4 @@
+import 'package:beacon/controller/controller_nodes.dart';
 import 'package:flutter/material.dart';
 import 'package:beacon/controller/controller_bluetooth.dart';
 import 'package:beacon/view/view_inicial.dart';
@@ -14,6 +15,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.put(RequirementStateController());
     Get.put(RequirementDistance());
+    Get.put(RequirementNode());
     final themeData = Theme.of(context);
     const primary = Colors.blue;
 
