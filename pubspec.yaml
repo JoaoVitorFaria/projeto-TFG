@@ -38,6 +38,7 @@ dependencies:
   flutter_beacon: ^0.5.1
   moving_average: ^0.3.0
   flutter_tts: ^3.5.0
+  directed_graph: ^0.3.7
 
 dev_dependencies:
   flutter_test:

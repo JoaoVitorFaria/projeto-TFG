@@ -8,6 +8,7 @@ import 'package:beacon/controller/controller_nodes.dart';
 import 'package:get/get.dart';
 import 'dart:developer';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:directed_graph/directed_graph.dart';
 
 class TabScanning extends StatefulWidget {
   const TabScanning({Key? key}) : super(key: key);
@@ -135,7 +136,7 @@ class _TabScanningState extends State<TabScanning> {
     // Equivalente ao Nó 9
     no12.defineValores(
         'nuudyl', 
-        "Você está próximo ao LDC1 e LDC2", 
+        "Você está próximo aos corredor dos banheiros", 
         "DD:59:6C:57:E9:0E",
         "Você está próximo aos banheiros. Siga em frente orientado-se pela parede à esquerda");
     // Equivalente ao Nó 10
@@ -145,17 +146,56 @@ class _TabScanningState extends State<TabScanning> {
         "D2:9A:07:1A:74:43",
         "Parabéns, os banheiros estão à sua direita");
 
+    int sum(int left, int right) => left + right;
+
+    
+    var graph = WeightedDirectedGraph<RequirementNode, int>(
+    {
+      no1 : {no2 : 1},
+      no2:  {no1: 1, no3: 1},
+      no3 : {no2: 1, no4: 1, no11: 1}, // Bifurcação no topo da rampa
+      no4 : {no3: 1, no5: 1},
+      no5 : {no4: 1, no6: 1},
+      no6 : {no5: 1, no7: 1},
+      no7 : {no6: 1, no8: 1},
+      no8 : {no7: 1, no9: 1},
+      no9 : {no8: 1, no10: 1},
+      no10 : {no9: 1}, // Chegou na secretaria
+      // Estes nós fazem uso dos mesmo beacons utilizados vértices 8,9 e 10.
+      no11: {no3: 1, no12: 1},
+      no12: {no11: 1, no13: 1},
+      no13: {no12: 1},
+    },
+    summation: sum,
+    zero: 0,
+  );
+
+  final rotaSecretaria = graph.shortestPath(no1, no10);
+  final rotaBanheiro = graph.shortestPath(no1, no13);
+
+  log('Rota para a secretaria: ');
+  for(int i = 0; i < rotaSecretaria.length; i++) {
+    log(rotaSecretaria[i].id);
+  }
+
+  log('Rota para o banheiro: ');
+  for(int i = 0; i < rotaBanheiro.length; i++) {
+    log(rotaBanheiro[i].id);
+  }
+    // Informa o usuário sobre as opções de destino.
+    flutterTts.speak("Seja bem Vindo ao App!");
+    flutterTts.speak('Opções para navegação: OPÇÃO 1- Secretaria, 2- Banheiro. Informe a opção desejada, dizendo o comando opção e o número da opção desejada.');
+    // A definição da variável destino deve ser feita através do input de voz
     var destino = ""; 
-    destino = "opção 1";
+    destino = "opção 2";
   
     List caminho = []; 
     if (destino == "opção 1") {
-      // Secretaria
-      caminho = [no1,no2,no3,no4,no5,no7,no8,no9,no10,no11]; // O nó 11 fica no corredor do LDC1 e serve para verificar se errou o caminho
+      caminho = rotaSecretaria; 
     } else if (destino == "opção 2") {
-      // Banheiro
-      caminho = [no1,no2,no3,no11,no11,no12,no13,no4]; // O nó 4 no sentindo da secretaria e serve para verificar se errou o caminho
+      caminho = rotaBanheiro;
     }
+    
 
     await flutterBeacon.initializeScanning; 
     if (!controller.bluetoothEnabled) {
@@ -172,50 +212,48 @@ class _TabScanningState extends State<TabScanning> {
     }
 
   var atual = 0 ;
+      
     _resultadoScan = flutterBeacon.ranging(regions).listen((RangingResult result) {
       _beaconPorRegiao[result.region] = result.beacons; 
       for (var list in _beaconPorRegiao.values) {
         _beacons.addAll(list);
       }
-      
-      if (_beacons.length == 5) {
-        //Testa se o número de beacons encontrados é igual a 5
-        // var resultado = controllerDistancia.mediaDistancia(_beacons);
-        // var resultado  = controllerDistancia.movingAverage(_beacons)
-         if (_beacons[0].macAddress == caminho[atual].getMac()) {
-          if(!caminho[atual].getVisited()){
+      // Verifica se foram feitas 20 leituras de sinais emitidos pelo beacon
+      if (_beacons.length == 20) {
+        // Aplica uma média móvel sobre as distâncas emitidas pelo beacon nas 20 leituras
+        var distanciaBeacon  = controllerDistancia.movingAverage(_beacons);
+        // As orientações só serão dadas caso o usuário esteja próximo ao beacon(2 metros).
+        if(distanciaBeacon <= 2){
+          // Caso o beacon próximo ao usuário seja o correto 
+          if (_beacons[0].macAddress == caminho[atual].getMac()) {
             caminho[atual].getLocalizacao();
             caminho[atual].getComandos();
             caminho[atual].setVisited();
             atual++;
-          }
-
-        }else { // caso o mac n seja o correto
-          
-          var index =  caminho.firstWhere((i) => i.getMac() == _beacons[0].macAddress); //descubro que mac q é 
-          log("Vertice visitado ? " + index.getVisited().toString()); 
-          if (index.getVisited()){ // caso seja um beacon que ja foi visitado
-            if(!(index.getMac() == caminho[atual-1].getMac())){ // caso eu esteja passando por ele por uma segunda vez
+         }else {  // Caso o beacon próximo não seja o correto.
+            var index =  caminho.firstWhere((i) => i.getMac() == _beacons[0].macAddress); 
+            // Verifico se esse beacon próximo já foi visitado ou não
+            if (index.getVisited()){
+              // Caso ele esteja passando próximo ao beacon uma segunda vez 
+              if(!(index.getMac() == caminho[atual-1].getMac())){ 
+               index.getLocalizacao();
+                index.getComandos();
+              }else{ // Caso ele apenas receba o sinal por ter ficado parado
+                // flutterTts.speak("Você já está na posição correta");
+              }
+            }else if(!index.getVisited()){ // Caso seja um beacon que ele não visitou e que não faz parte do caminho
+              flutterTts.speak("Você errou o caminho.");
               index.getLocalizacao();
-              index.getComandos();
-            }else{ // caso ele já tenha visitado visitado e seja o ultimo q eu li, entao n faço nada 
-              flutterTts.speak("Você já está na posição correta");
+              flutterTts.speak("Por favor, retorne!");
             }
-           
-
-          }else if(!index.getVisited()){ // caso seja um beacon que não foi visitado eu aviso que errou o caminho
-            flutterTts.speak("Você errou o caminho.");
-            index.getLocalizacao();
-            flutterTts.speak("Por favor, retorne!");
-          }
-    
          }
-
-        var resultado = controllerDistancia.mediaDistancia(_beacons);
-        log("Distancia com media: " + resultado.toString());
-        _beacons.clear(); //Limpa a lista de beacons
-        //  log("Distancia : "+_beacons[cont].accuracy.toString());
-        //   cont++;
+        }else{ // Caso ele esteja recebendo sinal de um beacon mas ainda esteja a uma distancia maior que 2 metros
+          // Poderia printar uma mensagem avisando que ele está próximo ao beacon.
+          //var index =  caminho.firstWhere((i) => i.getMac() == _beacons[0].macAddress); 
+          // flutterTts.speak("Você está próximo ao beacon." + index.getLocalizacao());
+        }
+        // Limpo a lista de leitura de beacons para não atrapalhar medições seguintes.
+        _beacons.clear(); 
       }
     });
   }
