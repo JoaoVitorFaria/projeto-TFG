@@ -1,4 +1,3 @@
-
 // -------------------------------------importacoes-------------------------------------
 import 'dart:async';
 import 'dart:io';
@@ -8,6 +7,7 @@ import 'package:flutter_beacon/flutter_beacon.dart';
 import 'package:beacon/controller/controller_bluetooth.dart';
 import 'package:beacon/view/view_scan.dart';
 import 'package:get/get.dart';
+import 'dart:developer';
 
 // Cria a tela
 class HomePage extends StatefulWidget {
@@ -22,59 +22,61 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   // funcao assincrona para receber informacoes sobre o bluetooth
   StreamSubscription<BluetoothState>? _streamBluetooth;
   int currentIndex = 0;
+  String retorno = ' ';
 
   // metodo para iniciar a aplicacao
   @override
   void initState() {
-    WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
     esperaEstadoBluetooth();
   }
 
   esperaEstadoBluetooth() async {
-    print('Verificando o estado do Bluetooth');
     // verifica o estado do bluetooth
-    _streamBluetooth = flutterBeacon.bluetoothStateChanged().listen((BluetoothState state) async {
+    _streamBluetooth = flutterBeacon
+        .bluetoothStateChanged()
+        .listen((BluetoothState state) async {
       // atualiza o estado do bluetooth no controle
       controller.atualizaEstadoBluetooth(state);
       // chama o metodo para verificar os parametros da aplicacao
       await verificaParametroApp();
     });
   }
-  // Metodo para chegar os requisitos da aplicacao
+
+  // Metodo para checar os requisitos da aplicacao
   verificaParametroApp() async {
     // recebe o estado do bluetooth(ligado ou desligado)
     final bluetoothState = await flutterBeacon.bluetoothState;
     // atualiza o estado do bluetooth
     controller.atualizaEstadoBluetooth(bluetoothState);
+    _streamBluetooth.printInfo();
 
-    // imprime o estado do bluetooth(ligado ou desligado)
-    print('BLUETOOTH $bluetoothState');
     // Caso o bluetooth esteja ligada a aplicacao pode ser iniciada
-    if (controller.bluetoothEnabled ) { 
-      print('Aplicação pronta');
+    if (controller.bluetoothEnabled) {
       if (currentIndex == 0) {
-        print('Escaneando');
-        // Chamada do metodo para comecar a escanear 
+        // Chamada do metodo para comecar a escanear
         controller.iniciaEscaneamento();
-      } 
+      }
     } else {
-      print('Aplicação não está pronta');
-      controller.pausaEscaneamento();// Caso o bluetooth seja desligado ele para de escanear
+      controller
+          .pausaEscaneamento(); // Caso o bluetooth seja desligado ele para de escanear
     }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    print('AppLifecycleState = $state');
-    if (state == AppLifecycleState.resumed) { // quando a aplicacao esta aberta
+    if (state == AppLifecycleState.resumed) {
+      // quando a aplicacao esta aberta
       if (_streamBluetooth != null) {
         if (_streamBluetooth!.isPaused) {
           _streamBluetooth?.resume();
+          retorno = _streamBluetooth.toString();
         }
       }
       await verificaParametroApp();
-    } else if (state == AppLifecycleState.paused) { // quando a aplicacao esta no background mas nao esta sendo usada
+    } else if (state == AppLifecycleState.paused) {
+      // quando a aplicacao esta no background mas nao esta sendo usada
       _streamBluetooth?.pause(); // pausa o stream
     }
   }
@@ -87,58 +89,71 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   @override
-  Widget build(BuildContext context) { // constroi o widget
-    return Scaffold( // uma estrutura padrão de tela do flutter
-      appBar: AppBar( // barra azul de cima da tela
-        title: const Text('Projeto'), // 
+  Widget build(BuildContext context) {
+    // constroi o widget
+    return Scaffold(
+      // uma estrutura padrão de tela do flutter
+      appBar: AppBar(
+        // barra azul de cima da tela
+        title: const Text('Projeto'), //
         centerTitle: false,
         actions: <Widget>[
-          Obx(() { // vai fazer update do widget do bluetooth
-            final state = controller.bluetoothState.value; // pega o valor do estado do bluetooth
+          Obx(() {
+            // vai fazer update do widget do bluetooth
+            final state = controller
+                .bluetoothState.value; // pega o valor do estado do bluetooth
 
             if (state == BluetoothState.stateOn) {
               return IconButton(
-                tooltip: 'Bluetooth ligado', // para acessibilidade(aparece escrito apos passar o mouse)
+                tooltip:
+                    'Bluetooth ligado', // para acessibilidade(aparece escrito apos passar o mouse)
                 icon: Icon(Icons.bluetooth_connected),
                 onPressed: () {},
-                color: Colors.lightBlueAccent, // cor do icone do bluetooth ligado
+                color:
+                    Colors.lightBlueAccent, // cor do icone do bluetooth ligado
               );
             }
 
-            if (state == BluetoothState.stateOff) { // caso bluetooth esteja desligado
+            if (state == BluetoothState.stateOff) {
+              // caso bluetooth esteja desligado
               return IconButton(
                 tooltip: 'Bluetooth desligado', //para acessibilidade
                 icon: Icon(Icons.bluetooth),
-                onPressed: handleOpenBluetooth, // chama o metodo que pede para ligar o bluetooth
+                onPressed:
+                    handleOpenBluetooth, // chama o metodo que pede para ligar o bluetooth
                 color: Colors.red,
               );
             }
 
             return IconButton(
-              icon: Icon(Icons.bluetooth_disabled), // quando nao reconhecer o bluetooth no dispositivo
+              icon: Icon(Icons
+                  .bluetooth_disabled), // quando nao reconhecer o bluetooth no dispositivo
               tooltip: 'Bluetooth não disponível', // acessiblidade
               onPressed: () {},
-              color: Colors.grey, 
+              color: Colors.grey,
             );
           }),
         ],
       ),
-      body: IndexedStack( // o espaco no meio da tela
+      body: IndexedStack(
+        // o espaco no meio da tela
         index: currentIndex,
         children: [
           TabScanning(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar( // a barra de baixo
+      bottomNavigationBar: BottomNavigationBar(
+        // a barra de baixo
         currentIndex: currentIndex,
-        onTap: (index) { 
+        onTap: (index) {
           setState(() {
             currentIndex = index;
           });
 
-          if (currentIndex == 0) { // inicia o scan ao clicar no botao
+          if (currentIndex == 0) {
+            // inicia o scan ao clicar no botao
             controller.iniciaEscaneamento();
-          }else {
+          } else {
             controller.pausaEscaneamento();
           }
         },
@@ -164,6 +179,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       } on PlatformException catch (e) {
         print(e);
       }
-    } 
+    }
   }
 }

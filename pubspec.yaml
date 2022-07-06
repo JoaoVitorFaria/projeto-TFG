@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   get: ^4.6.1
   flutter_beacon: ^0.5.1
+  moving_average: ^0.3.0
+  flutter_tts: ^3.5.0
 
 dev_dependencies:
   flutter_test:
