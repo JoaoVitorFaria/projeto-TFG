@@ -7,10 +7,12 @@ import 'package:get/get.dart';
 import 'controller/controller_distancia.dart';
 
 void main() {
-  runApp(MainApp());
+  runApp(const MainApp());
 }
 
 class MainApp extends StatelessWidget {
+  const MainApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     Get.put(RequirementStateController());
@@ -38,7 +40,7 @@ class MainApp extends StatelessWidget {
         brightness: Brightness.dark,
         primarySwatch: primary,
       ),
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }
