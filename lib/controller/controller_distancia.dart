@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
+
 import 'package:flutter_beacon/flutter_beacon.dart';
-import 'package:collection/collection.dart';
 import 'package:get/get.dart';
 import 'dart:math';
 import 'dart:developer' as dev;
 
+// Esta classe define métodos relacionados à distância entre o dispositivo do usuário e o Beacon
 class RequirementDistance extends GetxController {
+
   // Referencia: https://www.flybuy.com/2018-11-19-fundamentals-of-beacon-ranging#:~:text=Mobile%20devices%20can%20estimate%20the,beacon's%20signal%20level%20as%20RSSI.
   // Retorna a distancia em metros com uso do RSSI e txPower
   double calculaDistancia(int rssi, int? txPower) {
@@ -51,7 +52,6 @@ class RequirementDistance extends GetxController {
       media = media + listaBeacons[i].accuracy;
       dev.log("Valor sendo somado: " + listaBeacons[i].accuracy.toString());
     }
-
     media = media / listaBeacons.length;
     return media;
   }

@@ -1,20 +1,19 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_beacon/flutter_beacon.dart';
-
-import 'dart:developer' as dev;
 
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
+// Esta classe implementa os métodos relacionados a manipulação dos vértices da solução
 class RequirementNode extends GetxController {
+  final FlutterTts flutterTts = FlutterTts(); 
   bool visited = false;
-  var id = 0;
-  var descricao = '';
-  var mac = '';
-  var comandos = '';
+  var id = ''; // Identificador estampada do Beacon
+  var descricao = '';   // Descrição da localização do vértice
+  var mac = ''; // MAC do beacon
+  var comandos = ''; // Falas de orientação para o usuário
+ 
 
   // Inicializa o objeto com os valores passados
-  defineValores(int id, String descricao, String mac, String comandos) {
+  defineValores(String id, String descricao, String mac, String comandos) {
     this.id = id;
     this.descricao = descricao;
     this.mac = mac;
@@ -38,11 +37,11 @@ class RequirementNode extends GetxController {
 
   // Retorna a localização do Nó
   getLocalizacao() {
-    return descricao;
+    flutterTts.speak(descricao);
   }
 
   // Retorna as orientações até o próximo Nó
   getComandos() {
-    return comandos;
+    flutterTts.speak(comandos);
   }
 }
