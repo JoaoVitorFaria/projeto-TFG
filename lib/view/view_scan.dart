@@ -1,4 +1,5 @@
 
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter_beacon/flutter_beacon.dart';
@@ -10,11 +11,17 @@ import 'dart:developer';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:directed_graph/directed_graph.dart';
 
+
+
+
+
 class TabScanning extends StatefulWidget {
   const TabScanning({Key? key}) : super(key: key);
   @override 
   _TabScanningState createState() =>_TabScanningState(); 
 }
+
+
 
 class _TabScanningState extends State<TabScanning> {
   StreamSubscription<RangingResult>?_resultadoScan; // Stream para escanear beacons
@@ -43,7 +50,7 @@ class _TabScanningState extends State<TabScanning> {
       }
     });
   }
-
+  
   //Função assíncrona que inicia o scan do beacon
   iniciaScanBeacon() async {
     
@@ -66,19 +73,17 @@ class _TabScanningState extends State<TabScanning> {
     final no12 = RequirementNode();
     final no13 = RequirementNode();
 
-    // Nó k
+
     no1.defineValores(
         'nupXZG',
         'Você está na porta de entrada do IMC',
         "D7:05:E8:A5:81:6D",
         "Após passar pela porta, siga à esquerda. Há uma rampa, por favor, percorra-a");
-    // Nó A
     no2.defineValores(
         'nu1T2P',
         "Você está na rampa de acesso ao segundo andar do IMC ",
         'E4:D9:1C:68:10:5E',
         "A parede à esquerda terminou pois você chegou na metade da rampa.Por favor, continue subindo a rampa para chegar ao seu destino");
-    // Nó B
     no3.defineValores(
         'nu82HB', 
         "Você está no segundo andar do IMC", 
@@ -146,48 +151,81 @@ class _TabScanningState extends State<TabScanning> {
         "D2:9A:07:1A:74:43",
         "Parabéns, os banheiros estão à sua direita");
 
-    int sum(int left, int right) => left + right;
+    
 
     
-    var graph = WeightedDirectedGraph<RequirementNode, int>(
+  //   var graph = WeightedDirectedGraph<RequirementNode, int>(
+  //   {
+  //     no1 : {no2 : 1},
+  //     no2:  {no1: 1, no3: 1},
+  //     no3 : {no2: 1, no4: 1, no11: 1}, // Bifurcação no topo da rampa
+  //     no4 : {no3: 1, no5: 1},
+  //     no5 : {no4: 1, no6: 1},
+  //     no6 : {no5: 1, no7: 1},
+  //     no7 : {no6: 1, no8: 1},
+  //     no8 : {no7: 1, no9: 1},
+  //     no9 : {no8: 1, no10: 1},
+  //     no10 : {no9: 1}, // Chegou na secretaria
+  //     // Estes nós fazem uso dos mesmo beacons utilizados vértices 8,9 e 10.
+  //     no11: {no3: 1, no12: 1},
+  //     no12: {no11: 1, no13: 1},
+  //     no13: {no12: 1},
+  //   },
+  //   summation: sum,
+  //   zero: 0,
+  // );
+
+   int sum(int left, int right) => left + right;
+
+
+   var grafo = WeightedDirectedGraph<RequirementNode, int>(
     {
       no1 : {no2 : 1},
-      no2:  {no1: 1, no3: 1},
-      no3 : {no2: 1, no4: 1, no11: 1}, // Bifurcação no topo da rampa
-      no4 : {no3: 1, no5: 1},
-      no5 : {no4: 1, no6: 1},
-      no6 : {no5: 1, no7: 1},
-      no7 : {no6: 1, no8: 1},
-      no8 : {no7: 1, no9: 1},
-      no9 : {no8: 1, no10: 1},
-      no10 : {no9: 1}, // Chegou na secretaria
+      no2:  {no1: 1, no3: 15},
+      no3 : {no2: 15, no4: 12, no11: 10}, // Bifurcação no topo da rampa
+      no4 : {no3: 12, no5: 11},
+      no5 : {no4: 11, no6: 17},
+      no6 : {no5: 17, no7: 11},
+      no7 : {no6: 11, no8: 11},
+      no8 : {no7: 11, no9: 9},
+      no9 : {no8: 9, no10: 22},
+      no10 : {no9: 22}, // Chegou na secretaria
       // Estes nós fazem uso dos mesmo beacons utilizados vértices 8,9 e 10.
-      no11: {no3: 1, no12: 1},
-      no12: {no11: 1, no13: 1},
-      no13: {no12: 1},
+      no11: {no3: 10, no12: 9},
+      no12: {no11: 9, no13: 6},
+      no13: {no12: 6},
     },
     summation: sum,
     zero: 0,
   );
 
-  final rotaSecretaria = graph.shortestPath(no1, no10);
-  final rotaBanheiro = graph.shortestPath(no1, no13);
+  final rotaSecretaria = grafo.shortestPath(no1, no10);
+  final rotaBanheiro = grafo.shortestPath(no1, no13);
 
-  log('Rota para a secretaria: ');
-  for(int i = 0; i < rotaSecretaria.length; i++) {
-    log(rotaSecretaria[i].id);
-  }
-
-  log('Rota para o banheiro: ');
-  for(int i = 0; i < rotaBanheiro.length; i++) {
-    log(rotaBanheiro[i].id);
-  }
     // Informa o usuário sobre as opções de destino.
     flutterTts.speak("Seja bem Vindo ao App!");
-    flutterTts.speak('Opções para navegação: OPÇÃO 1- Secretaria, 2- Banheiro. Informe a opção desejada, dizendo o comando opção e o número da opção desejada.');
+    flutterTts.speak('Opções para navegação: " + "OPÇÃO 1- Secretaria, 2- Banheiro. Informe a opção desejada, dizendo o comando opção e o número da opção desejada.');
     // A definição da variável destino deve ser feita através do input de voz
-    var destino = ""; 
-    destino = "opção 2";
+    var destino = "";
+    
+//      String _text = '';
+// stt.SpeechToText speech = stt.SpeechToText(); 
+//     bool available = await speech.initialize();
+//     if (available) {
+//       speech.listen(onResult: (val) => setState(() {
+//         _text = val.recognizedWords;
+//       }
+//       ));
+//     } else {
+//       log("The user has denied the use of speech recognition.");
+//     }
+//     log(available.toString());
+//     log("testeeeeeeeeeeeeee");
+//     log(_text);
+    
+//     flutterTts.speak(_text);
+
+    destino = "opção 1";
   
     List caminho = []; 
     if (destino == "opção 1") {
@@ -211,7 +249,8 @@ class _TabScanningState extends State<TabScanning> {
       }
     }
 
-  var atual = 0 ;
+  var beaconAtual = 7 ;
+  bool localizacaoAtual = true;
       
     _resultadoScan = flutterBeacon.ranging(regions).listen((RangingResult result) {
       _beaconPorRegiao[result.region] = result.beacons; 
@@ -220,22 +259,29 @@ class _TabScanningState extends State<TabScanning> {
       }
       // Verifica se foram feitas 20 leituras de sinais emitidos pelo beacon
       if (_beacons.length == 20) {
+        // Verifica a posição inicial do usuário
+        if(localizacaoAtual){
+          var index =  caminho.firstWhere((i) => i.getMac() == _beacons[0].macAddress); //
+          var posicaoCorreta = caminho.indexOf(index);
+          beaconAtual = posicaoCorreta;
+          localizacaoAtual = false;
+        }
         // Aplica uma média móvel sobre as distâncas emitidas pelo beacon nas 20 leituras
         var distanciaBeacon  = controllerDistancia.movingAverage(_beacons);
         // As orientações só serão dadas caso o usuário esteja próximo ao beacon(2 metros).
         if(distanciaBeacon <= 2){
           // Caso o beacon próximo ao usuário seja o correto 
-          if (_beacons[0].macAddress == caminho[atual].getMac()) {
-            caminho[atual].getLocalizacao();
-            caminho[atual].getComandos();
-            caminho[atual].setVisited();
-            atual++;
+          if (_beacons[0].macAddress == caminho[beaconAtual].getMac()) {
+            caminho[beaconAtual].getLocalizacao();
+            caminho[beaconAtual].getComandos();
+            caminho[beaconAtual].setVisited();
+            beaconAtual++;
          }else {  // Caso o beacon próximo não seja o correto.
             var index =  caminho.firstWhere((i) => i.getMac() == _beacons[0].macAddress); 
             // Verifico se esse beacon próximo já foi visitado ou não
             if (index.getVisited()){
               // Caso ele esteja passando próximo ao beacon uma segunda vez 
-              if(!(index.getMac() == caminho[atual-1].getMac())){ 
+              if(!(index.getMac() == caminho[beaconAtual-1].getMac())){ 
                index.getLocalizacao();
                 index.getComandos();
               }else{ // Caso ele apenas receba o sinal por ter ficado parado
